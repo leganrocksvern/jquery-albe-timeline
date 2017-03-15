@@ -8,7 +8,7 @@ var languages = [{
         monthNames: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
         dayNames: ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"],
         msgEmptyContent: "Sem informações a serem exibidas.",
-    },//Agrego traducción al español.
+    },
     "es-es": {
         monthNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
         dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
@@ -18,14 +18,16 @@ var languages = [{
 
 jQuery.fn.albeTimeline = function (json, options) {
 
+    $(this).empty();
     var _this = this;
 
     //Mescla opções do usuário com o padrão
     var settings = $.extend({
         effect: "fadeInUp",
         showMenu: true,
-        language: "pt-br",
+        language: "en-us",
         sortDesc: true,
+        format: "dd MMMM"
     }, options);
 
     var idioma = languages[0][settings.language];
@@ -64,7 +66,7 @@ jQuery.fn.albeTimeline = function (json, options) {
 
             /****************************************SLOT****************************************/
             var badge = $('<div>').addClass("badge");
-            badge.text(fnDateFormat(element.time, 1, idioma));
+            badge.text(fnDateFormat(element.time, settings.format, idioma));
 
             var ePanel = $("<div>").addClass("panel").append(badge);
 
@@ -76,7 +78,7 @@ jQuery.fn.albeTimeline = function (json, options) {
                 ePanel.append(ePanelHead);
             }
 
-            var ePanelBody = $("<div>").addClass("panel-body");
+            var ePanelBody = $("<div>").addClass("panel-body")
             $.each(element.body, function (index2, value2) {
 
                 //Elemento HTML
@@ -92,7 +94,7 @@ jQuery.fn.albeTimeline = function (json, options) {
 
                 //Conteúdo do elemento
                 if (value2.content)
-                    e.text(value2.content);
+                    e.html(value2.content); //se cambia para que pueda contener contenido html
 
                 ePanelBody.append(e);
             });
@@ -111,7 +113,7 @@ jQuery.fn.albeTimeline = function (json, options) {
             /****************************************FIM - SLOT****************************************/
         });
 
-        //Marcador inicial da Timeline 
+        //Marcador inicial da Timeline
         var badge = $('<div>').addClass("badge").html("&nbsp;");
         var ePanel = $("<div>").addClass("panel").append(badge);
         eTimeline.append($("<article>").append(ePanel));
@@ -141,6 +143,14 @@ jQuery.fn.albeTimeline = function (json, options) {
 //3.:"dd de MMMM de aaaaa"
 //4.:"DD, dd de MMMM de aaaaa"
 //default.: "YYYY-MM-DD" (ISO 8601)
+//LeganRocksvern modifica
+//formato nuevo
+//"dd MMMM"
+//"dd/MM/aaaaa"
+//"dd de MMMM de aaaaa"
+//"DD, dd de MMMM de aaaaa"
+//"dd-mm-yyyy"
+//default.: "YYYY-MM-DD" (ISO 8601)
 function fnDateFormat(value, format, language) {
 
     var parts = value.split('-');
@@ -150,14 +160,16 @@ function fnDateFormat(value, format, language) {
     var m = ((newDate.getMonth() < 10 ? "0" : "") + newDate.getMonth());
 
     switch (format) {
-        case 1:
+        case 'dd MMMM':
             return d + " " + language.monthNames[newDate.getMonth()].substring(0, 3);
-        case 2:
+        case 'dd/MM/yyyy':
             return d + "/" + m + "/" + newDate.getFullYear();
-        case 3:
+        case 'ddMMMMyyyy':
             return d + " de " + language.monthNames[newDate.getMonth()] + " de " + newDate.getFullYear();
-        case 4:
+        case 'DD, ddMMMMyyyy':
             return language.dayNames[newDate.getDay()] + ", " + d + " de " + language.monthNames[newDate.getMonth()] + " de " + newDate.getFullYear();
+        case 'dd-mm-yyyy':
+            return d + "-" + m + "-" + newDate.getFullYear();
         default:
             return newDate.getFullYear() + "-" + m + "-" + d;
     }
